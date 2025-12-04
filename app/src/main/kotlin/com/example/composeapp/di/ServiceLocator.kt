@@ -11,6 +11,7 @@ import com.example.composeapp.domain.repository.DiscoveryRepository
 import com.example.composeapp.domain.repository.FileShareRepository
 import com.example.composeapp.domain.repository.SettingsRepository
 import com.example.composeapp.domain.repository.TransferRepository
+import com.example.composeapp.domain.usecase.*
 import com.example.composeapp.service.TransferManager
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
@@ -30,6 +31,13 @@ object ServiceLocator {
     private var _fileShareRepository: FileShareRepository? = null
     private var _transferRepository: TransferRepository? = null
     private var _settingsRepository: SettingsRepository? = null
+    
+    // Use cases
+    private var _startDiscoveryUseCase: StartDiscoveryUseCase? = null
+    private var _fetchRemoteFilesUseCase: FetchRemoteFilesUseCase? = null
+    private var _startDownloadUseCase: StartDownloadUseCase? = null
+    private var _observeTransfersUseCase: ObserveTransfersUseCase? = null
+    private var _saveSettingsUseCase: SaveSettingsUseCase? = null
     
     // Кэш для discovered peers
     private var cachedDiscoveredPeers: List<DevicePeer> = emptyList()
@@ -133,6 +141,67 @@ object ServiceLocator {
     }
     
     /**
+     * Получает StartDiscoveryUseCase
+     */
+    fun getStartDiscoveryUseCase(): StartDiscoveryUseCase {
+        if (_startDiscoveryUseCase == null) {
+            _startDiscoveryUseCase = StartDiscoveryUseCase(
+                discoveryRepository = getDiscoveryRepository(),
+                settingsRepository = getSettingsRepository()
+            )
+        }
+        return _startDiscoveryUseCase!!
+    }
+    
+    /**
+     * Получает FetchRemoteFilesUseCase
+     */
+    fun getFetchRemoteFilesUseCase(): FetchRemoteFilesUseCase {
+        if (_fetchRemoteFilesUseCase == null) {
+            _fetchRemoteFilesUseCase = FetchRemoteFilesUseCase(
+                fileShareRepository = getFileShareRepository()
+            )
+        }
+        return _fetchRemoteFilesUseCase!!
+    }
+    
+    /**
+     * Получает StartDownloadUseCase
+     */
+    fun getStartDownloadUseCase(): StartDownloadUseCase {
+        if (_startDownloadUseCase == null) {
+            _startDownloadUseCase = StartDownloadUseCase(
+                transferRepository = getTransferRepository()
+            )
+        }
+        return _startDownloadUseCase!!
+    }
+    
+    /**
+     * Получает ObserveTransfersUseCase
+     */
+    fun getObserveTransfersUseCase(): ObserveTransfersUseCase {
+        if (_observeTransfersUseCase == null) {
+            _observeTransfersUseCase = ObserveTransfersUseCase(
+                transferRepository = getTransferRepository()
+            )
+        }
+        return _observeTransfersUseCase!!
+    }
+    
+    /**
+     * Получает SaveSettingsUseCase
+     */
+    fun getSaveSettingsUseCase(): SaveSettingsUseCase {
+        if (_saveSettingsUseCase == null) {
+            _saveSettingsUseCase = SaveSettingsUseCase(
+                settingsRepository = getSettingsRepository()
+            )
+        }
+        return _saveSettingsUseCase!!
+    }
+    
+    /**
      * Очищает ресурсы при завершении приложения
      */
     fun cleanup() {
@@ -145,6 +214,14 @@ object ServiceLocator {
         _fileShareRepository = null
         _transferRepository = null
         _settingsRepository = null
+        
+        // Очищаем use cases
+        _startDiscoveryUseCase = null
+        _fetchRemoteFilesUseCase = null
+        _startDownloadUseCase = null
+        _observeTransfersUseCase = null
+        _saveSettingsUseCase = null
+        
         cachedDiscoveredPeers = emptyList()
     }
 }
